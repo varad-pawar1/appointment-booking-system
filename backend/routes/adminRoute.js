@@ -1,5 +1,5 @@
 import express from 'express';
-import { loginAdmin, appointmentsAdmin, appointmentCancel, addDoctor, allDoctors, adminDashboard, addHealtInfo, allHealtInfo } from '../controllers/adminController.js';
+import { loginAdmin, appointmentsAdmin, appointmentCancel, addDoctor, deleteDoctor, allDoctors, adminDashboard, addHealtInfo, deleteHealtInfo, allHealtInfo } from '../controllers/adminController.js';
 import { changeAvailablity } from '../controllers/doctorController.js';
 import authAdmin from '../middleware/authAdmin.js';
 import upload from '../middleware/multer.js';
@@ -7,7 +7,9 @@ const adminRouter = express.Router();
 
 adminRouter.post("/login", loginAdmin)
 adminRouter.post("/add-doctor", authAdmin, upload.single('image'), addDoctor)
+adminRouter.delete("/delete-doctor/:id", authAdmin, deleteDoctor)
 adminRouter.post("/add-healtInfo", authAdmin, upload.single('image'), addHealtInfo)
+adminRouter.delete("/delete-healtInfo/:id", authAdmin, deleteHealtInfo)
 adminRouter.get("/appointments", authAdmin, appointmentsAdmin)
 adminRouter.post("/cancel-appointment", authAdmin, appointmentCancel)
 adminRouter.get("/all-doctors", authAdmin, allDoctors)

@@ -131,6 +131,47 @@ const AdminContextProvider = (props) => {
 
     }
 
+
+
+    // Function to delete health info using API
+    const deleteHealtInfo = async (healtInfoId) => {
+        try {
+            const { data } = await axios.delete(`${backendUrl}/api/admin/delete-healtInfo/${healtInfoId}`, { headers: { aToken } })
+
+            if (data.success) {
+                toast.success(data.message)
+                getAllHealtInfo() // Refresh the list after deletion
+            } else {
+                toast.error(data.message)
+            }
+
+        } catch (error) {
+            toast.error(error.message)
+            console.log(error)
+        }
+    }
+
+
+    // Function to delete health info using API
+    const deleteDoctor = async (doctorId) => {
+        try {
+            const { data } = await axios.delete(`${backendUrl}/api/admin/delete-doctor/${doctorId}`, { headers: { aToken } })
+
+            if (data.success) {
+                toast.success(data.message)
+                getAllDoctors()
+            } else {
+                toast.error(data.message)
+            }
+
+        } catch (error) {
+            toast.error(error.message)
+            console.log(error)
+        }
+    }
+
+
+
     const value = {
         aToken, setAToken,
         doctors,
@@ -142,7 +183,9 @@ const AdminContextProvider = (props) => {
         getAllAppointments,
         getDashData,
         cancelAppointment,
-        dashData
+        dashData,
+        deleteHealtInfo,
+        deleteDoctor
     }
 
     return (

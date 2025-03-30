@@ -114,6 +114,23 @@ const addDoctor = async (req, res) => {
 }
 
 
+const deleteDoctor = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Assuming your model is named DoctorModel
+        const result = await doctorModel.findByIdAndDelete(id);
+
+        if (result) {
+            res.json({ success: true, message: "Doctor deleted successfully." });
+        } else {
+            res.json({ success: false, message: "Doctor not found." });
+        }
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 
 
@@ -151,6 +168,29 @@ const addHealtInfo = async (req, res) => {
         res.json({ success: false, message: error.message })
     }
 }
+
+
+
+
+const deleteHealtInfo = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Assuming your model is named healtInfoModel
+        const result = await healtInfoModel.findByIdAndDelete(id);
+
+        if (result) {
+            res.json({ success: true, message: "Health info deleted successfully." });
+        } else {
+            res.json({ success: false, message: "Health info not found." });
+        }
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
 
 // API to get all doctors list for admin panel
 const allDoctors = async (req, res) => {
@@ -208,7 +248,9 @@ export {
     appointmentsAdmin,
     appointmentCancel,
     addDoctor,
+    deleteDoctor,
     addHealtInfo,
+    deleteHealtInfo,
     allDoctors,
     allHealtInfo,
     adminDashboard
