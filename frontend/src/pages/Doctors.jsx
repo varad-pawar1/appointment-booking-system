@@ -73,7 +73,7 @@ const Doctors = () => {
                   key={item._id}
                   className="rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500 mb-4 col-span-full flex flex-col items-center justify-center w-full">
 
-                  <img className='bg-[#EAEFFF]' src={item.image} alt="" />
+                  <img className='bg-[#EAEFFF] w-[200px] h-[200px] object-contine' src={item.image} alt="" />
                   <div className="p-4">
                     <p className="text-[#262626] text-lg font-medium">{item.name}</p>
                     <p className="text-[#5C5C5C] text-sm">{item.speciality}</p>
@@ -88,7 +88,7 @@ const Doctors = () => {
                   onClick={() => { navigate(`/appointment/${item._id}`); scrollTo(0, 0); }}
                   className="border border-[#C9D8FF] rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500 mb-4"
                 >
-                  <img className='bg-[#EAEFFF]' src={item.image} alt="" />
+                  <img className='bg-[#EAEFFF] w-full' src={item.image} alt="" />
                   <div className="p-4">
                     <div className={`flex items-center gap-2 text-sm ${item.available ? 'text-green-500' : 'text-gray-500'}`}>
                       <p className={`w-2 h-2 rounded-full ${item.available ? 'bg-green-500' : 'bg-gray-500'}`}></p>
