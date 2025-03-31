@@ -132,60 +132,156 @@ const deleteDoctor = async (req, res) => {
     }
 };
 
-
-
-// API for adding addHealtInfo
-const addHealtInfo = async (req, res) => {
-
+const updateDoctor = async (req, res) => {
     try {
+        const { id } = req.params;
+        const { name, email, password, speciality, degree, experience, about, fees, address } = req.body;
+        let image = req.body.image;
 
-        const { name, speciality, about } = req.body
-        const imageFile = req.file
-
-        // checking for all data to add doctor
-        if (!name || !speciality || !about) {
-            return res.json({ success: false, message: "Missing Details" })
+        // Find existing doctor
+        const existingDoctor = await doctorModel.findById(id);
+        if (!existingDoctor) {
+            return res.status(404).json({ success: false, message: 'Doctor not found' });
         }
 
-        // upload image to cloudinary
-        const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
-        const imageUrl = imageUpload.secure_url
+        // Handle password update if provided
+        let hashedPassword = existingDoctor.password;
+        if (password && password.length >= 8) {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
 
-        const healtInfoData = {
+        // Handle image update if a new file is uploaded
+        if (req.file) {
+            // Delete old image from Cloudinary
+            const oldImageUrl = existingDoctor.image;
+            if (oldImageUrl) {
+                const publicId = oldImageUrl.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(publicId);
+            }
+
+            // Upload new image to Cloudinary
+            const imageUpload = await cloudinary.uploader.upload(req.file.path, { resource_type: "image" });
+            image = imageUpload.secure_url;
+        } else {
+            image = existingDoctor.image; // Keep old image if not updated
+        }
+
+        // Update the doctor record
+        const updatedDoctor = await doctorModel.findByIdAndUpdate(
+            id,
+            { name, email, password: hashedPassword, speciality, degree, experience, about, fees, address: JSON.parse(address), image },
+            { new: true }
+        );
+
+        res.status(200).json({ success: true, message: 'Doctor updated successfully', updatedDoctor });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+// API to add Health Info
+const addHealtInfo = async (req, res) => {
+    try {
+        const { name, speciality, about } = req.body;
+        const imageFile = req.file;
+
+        // Check for missing details
+        if (!name || !speciality || !about || !imageFile) {
+            return res.status(400).json({ success: false, message: "Missing Details" });
+        }
+
+        // Upload image to Cloudinary
+        const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
+        const imageUrl = imageUpload.secure_url;
+
+        // Create new HealthInfo
+        const newHealtInfo = new healtInfoModel({
             name,
             image: imageUrl,
             speciality,
             about,
             date: Date.now()
-        }
+        });
 
-        const newHealtInfo = new healtInfoModel(healtInfoData)
-        await newHealtInfo.save()
-        res.json({ success: true, message: 'HealtInfo Added' })
+        await newHealtInfo.save();
+        res.status(201).json({ success: true, message: 'Health Info Added', data: newHealtInfo });
 
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
     }
-}
+};
 
-
-
-
+// API to delete Health Info
 const deleteHealtInfo = async (req, res) => {
-    const { id } = req.params;
-
     try {
-        // Assuming your model is named healtInfoModel
-        const result = await healtInfoModel.findByIdAndDelete(id);
+        const { id } = req.params;
 
-        if (result) {
-            res.json({ success: true, message: "Health info deleted successfully." });
-        } else {
-            res.json({ success: false, message: "Health info not found." });
+        // Find the record to delete
+        const healthInfo = await healtInfoModel.findById(id);
+        if (!healthInfo) {
+            return res.status(404).json({ success: false, message: "Health info not found." });
         }
 
+        // Delete from Cloudinary (Optional: If you want to delete the image)
+        const imageUrl = healthInfo.image;
+        if (imageUrl) {
+            const publicId = imageUrl.split('/').pop().split('.')[0]; // Extract public ID
+            await cloudinary.uploader.destroy(publicId);
+        }
+
+        // Delete from Database
+        await healtInfoModel.findByIdAndDelete(id);
+
+        res.status(200).json({ success: true, message: "Health info deleted successfully." });
     } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// API to update Health Info
+const updateHealtInfo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, about, speciality } = req.body;
+        let image = req.body.image;
+
+        // Find existing Health Info
+        const existingInfo = await healtInfoModel.findById(id);
+        if (!existingInfo) {
+            return res.status(404).json({ success: false, message: 'HealthInfo not found' });
+        }
+
+        // Handle image update if a new file is uploaded
+        if (req.file) {
+            // Delete old image from Cloudinary
+            const oldImageUrl = existingInfo.image;
+            if (oldImageUrl) {
+                const publicId = oldImageUrl.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(publicId);
+            }
+
+            // Upload new image to Cloudinary
+            const imageUpload = await cloudinary.uploader.upload(req.file.path, { resource_type: "image" });
+            image = imageUpload.secure_url;
+        } else {
+            image = existingInfo.image; // Keep old image if not updated
+        }
+
+        // Update the HealthInfo record
+        const updatedInfo = await healtInfoModel.findByIdAndUpdate(
+            id,
+            { name, about, speciality, image },
+            { new: true }
+        );
+
+        res.status(200).json({ success: true, message: 'HealthInfo updated successfully', updatedInfo });
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -248,9 +344,11 @@ export {
     appointmentsAdmin,
     appointmentCancel,
     addDoctor,
+    updateDoctor,
     deleteDoctor,
     addHealtInfo,
     deleteHealtInfo,
+    updateHealtInfo,
     allDoctors,
     allHealtInfo,
     adminDashboard
